@@ -1,10 +1,13 @@
 const express = require('express');
 const fs = require('fs');
 const app = express();
-
+const readline = require('readline');
+const marked = require('marked');
+const notesDirPath = './notes/';
 app.set('view engine', 'pug');
 
-function updateCatolog() {
+app.locals.catolog = [];
+const translateNotes = (id) => {
   marked.setOptions({
     renderer: new marked.Renderer(),
     gfm: true,
@@ -14,21 +17,62 @@ function updateCatolog() {
     sanitize: false,
     smartLists: true,
     smartypants: false
-  });
-  
-  const md = fs.readFileSync('./notes/2017-8-12.md', 'utf-8');
+  });  
+  const md = fs.readFileSync(notesDirPath + id, 'utf-8');
   return marked(md);
 }
-updateCatolog();
-app.get('/', (req, res) => {
-  //res.sendfile('./note_htmls/2017-8-12.html');
-  res.send(updateCatolog());
-  console.log(updateCatolog());
-});
+const updateCatolog = () => {
+  const filePromise = new Promise((resolve, reject) => {
+    fs.readdir(notesDirPath, (err, files) => {
+      if(err) {
+        reject(err);
+      };
+      resolve(files)
+    });
+  }).catch(function(err) {
+    console.log('dir open error:' + err); 
+  }); 
+  filePromise.then((files) => {
+    const promises = files.map((val) => {
+      return new Promise((resolve, reject) => {
+        const rl = readline.createInterface({
+          input: fs.createReadStream(`${notesDirPath}/${val}`),
+        });
+        rl.on('line', (line) => {
+          resolve({
+            filename: val,
+            title: line.replace(/^#+/, '').trim(),
+          });
+          rl.close();
+        });
+      });
+    });
+    Promise.all(promises).then((items) => {
+      app.locals.catolog = items;
+      console.log(items);
+    }).catch((err) => {
+      console.log('files read error: ' + err);
+    });
+  });
+};
 
+//fs.watch(notesDirPath, { encoding: 'buffer' }, (eventType, filename) = > {
+//  if(filename) {
+//    updateCatolog();
+//  }
+//})
+updateCatolog();
+
+app.get('/', (req, res) => {
+  res.render('index', { items: app.locals.catolog });
+});
+app.get('/article;id=:id', (req, res) => {
+  const path = app.locals.catolog[req.params.id].filename;
+  res.send(translateNotes(path));
+});
 app.use(express.static('public'));
 
-const server = app.listen(3000, function () {
+const server = app.listen(3000, () => {
   const{ address, port } = server.address();
   console.log(`listen ${address}:${port}`);
 });

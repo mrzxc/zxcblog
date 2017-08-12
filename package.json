@@ -18,6 +18,7 @@
   "homepage": "https://github.com/mrzxc/zxcblog#readme",
   "dependencies": {
     "express": "^4.15.4",
-    "marked": "^0.3.6"
+    "marked": "^0.3.6",
+    "pug": "^2.0.0-rc.3"
   }
 }
