@@ -5,7 +5,6 @@ const app = express();
 app.set('view engine', 'pug');
 
 function updateCatolog() {
-  var marked = require('marked');
   marked.setOptions({
     renderer: new marked.Renderer(),
     gfm: true,
@@ -18,8 +17,6 @@ function updateCatolog() {
   });
   
   const md = fs.readFileSync('./notes/2017-8-12.md', 'utf-8');
-  console.log(md)
-  console.log(marked(md));
   return marked(md);
 }
 updateCatolog();
