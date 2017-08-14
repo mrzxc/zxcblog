@@ -1,3 +1,4 @@
+const http = require('http');
 const express = require('express');
 const fs = require('fs');
 const app = express();
@@ -62,11 +63,6 @@ const updateCatolog = () => {
   });
 };
 
-fs.watch(notesDirPath, { encoding: 'buffer' }, (eventType, filename) = > {
-  if(filename) {
-    updateCatolog();
-  }
-});
 updateCatolog();
 
 app.get('/', (req, res) => {
@@ -82,4 +78,3 @@ const server = app.listen(3000, () => {
   const{ address, port } = server.address();
   console.log(`listen ${address}:${port}`);
 });
-
