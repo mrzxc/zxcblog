@@ -24,13 +24,19 @@ const translateNotes = (id) => {
 const updateCatolog = () => {
   const filePromise = new Promise((resolve, reject) => {
     fs.readdir(notesDirPath, (err, files) => {
+      const _files = [];
       if(err) {
         reject(err);
       };
-      resolve(files)
+      files.forEach((val) => {
+        if(val.substr(-3) === ".md") {
+          _files.push(val);
+        }
+      });
+      resolve(_files);
     });
   }).catch(function(err) {
-    console.log('dir open error:' + err); 
+    console.log('error:' + err); 
   }); 
   filePromise.then((files) => {
     const promises = files.map((val) => {
@@ -56,11 +62,11 @@ const updateCatolog = () => {
   });
 };
 
-//fs.watch(notesDirPath, { encoding: 'buffer' }, (eventType, filename) = > {
-//  if(filename) {
-//    updateCatolog();
-//  }
-//})
+fs.watch(notesDirPath, { encoding: 'buffer' }, (eventType, filename) = > {
+  if(filename) {
+    updateCatolog();
+  }
+});
 updateCatolog();
 
 app.get('/', (req, res) => {
