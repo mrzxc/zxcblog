@@ -64,8 +64,9 @@ const updateCatolog = () => {
 };
 
 updateCatolog();
-
+let count = 0;
 app.get('/', (req, res) => {
+  console.log(count += 1); 
   res.render('index', { items: app.locals.catolog });
 });
 app.get('/article;id=:id', (req, res) => {
